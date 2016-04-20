@@ -40,8 +40,9 @@ namespace AzureStorageQueueBridge
             busConfiguration.Conventions().DefiningCommandsAs(t => t.Name == "Command");
             busConfiguration.Conventions().DefiningEventsAs(t => t.Name == "Event");
             busConfiguration.UseSerialization<XmlSerializer>();
-            busConfiguration.UseTransport<AzureStorageQueueTransport>();
+            busConfiguration.UseTransport<AzureServiceBusTransport>();
             busConfiguration.UsePersistence<InMemoryPersistence>();
+            busConfiguration.ScaleOut().UseSingleBrokerQueue();
             busConfiguration.EnableInstallers();
 
             using (Bus.Create(busConfiguration).Start())

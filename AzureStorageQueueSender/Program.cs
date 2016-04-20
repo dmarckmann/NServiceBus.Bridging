@@ -15,28 +15,41 @@ namespace AzureStorageQueueSender
             BusConfiguration busConfiguration = new BusConfiguration();
             busConfiguration.Conventions().DefiningCommandsAs(t => t.Name == "Command");
             busConfiguration.Conventions().DefiningEventsAs(t => t.Name == "Event");
-            busConfiguration.UseTransport<AzureStorageQueueTransport>();
+            busConfiguration.UseTransport<AzureServiceBusTransport>();
             busConfiguration.UsePersistence<InMemoryPersistence>();
             busConfiguration.UseSerialization<XmlSerializer>();
+            busConfiguration.ScaleOut().UseSingleBrokerQueue();
 
             busConfiguration.EnableInstallers();
        
             using (IBus bus = Bus.Create(busConfiguration).Start())
             {
-                Console.WriteLine("Press enter to publish an event");
-                Console.WriteLine("Press any key to exit.");
+                Console.WriteLine("Press s to Send a command");
+                Console.WriteLine("Press p to publish an event");
+                Console.WriteLine("Press esc to exit.");
 
                 while (true)
                 {
                     ConsoleKeyInfo key = Console.ReadKey();
                     Console.WriteLine();
 
-                    if (key.Key != ConsoleKey.Enter)
+                    if (key.Key == ConsoleKey.Escape )
                     {
                         return;
                     }
-                    bus.Send("RabbitMqReceiver", new Command() { Id = Guid.NewGuid() });
-                    Console.WriteLine("Msg sent / published");
+                    if (key.Key == ConsoleKey.S)
+                    {
+                        bus.Send(new Command() { Id = Guid.NewGuid() });
+                        Console.WriteLine("Msg sent ");
+                    }
+
+                    if (key.Key == ConsoleKey.P)
+                    {
+                        bus.Publish(new Event() { Id = Guid.NewGuid() });
+                        Console.WriteLine("Msg published");
+                    }
+
+                    
                 }
             }
         }

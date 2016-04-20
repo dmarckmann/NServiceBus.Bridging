@@ -29,15 +29,31 @@ namespace RabbitMqReceiver
 
                 while (true)
                 {
-                    ConsoleKeyInfo key = Console.ReadKey();
-                    Console.WriteLine();
+                    Console.WriteLine("Press s to Send a command");
+                    Console.WriteLine("Press p to publish an event");
+                    Console.WriteLine("Press esc to exit.");
 
-                    if (key.Key != ConsoleKey.Enter)
+                    while (true)
                     {
-                        return;
+                        ConsoleKeyInfo key = Console.ReadKey();
+                        Console.WriteLine();
+
+                        if (key.Key == ConsoleKey.Escape)
+                        {
+                            return;
+                        }
+                        if (key.Key == ConsoleKey.S)
+                        {
+                            bus.Send(new Command() { Id = Guid.NewGuid() });
+                            Console.WriteLine("Msg sent ");
+                        }
+
+                        if (key.Key == ConsoleKey.P)
+                        {
+                            bus.Publish(new Event() { Id = Guid.NewGuid() });
+                            Console.WriteLine("Msg published");
+                        }
                     }
-                    bus.Send("AzureStorageQueueSender", new Command() { Id = Guid.NewGuid() });
-                    Console.WriteLine("Msg sent / published");
                 }
             }
 

@@ -64,6 +64,7 @@ namespace Bridging
                     string source = reader.GetString(reader.GetOrdinal("Source"));
                     string dest = reader.GetString(reader.GetOrdinal("Destination"));
                     string intent = reader.GetString(reader.GetOrdinal("Intent"));
+                    var msgIntent = (MessageIntentEnum)Enum.Parse(typeof(MessageIntentEnum), intent);
                     Dictionary<string, string> headers = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("Headers")));
                     var messageTypes = headers[Headers.EnclosedMessageTypes].Split(';').Select(i => Type.GetType(i)).ToList();
                     using (Stream body = reader.GetStream(reader.GetOrdinal("Body")))
@@ -81,7 +82,24 @@ namespace Bridging
                         if (headers.ContainsKey(Headers.TimeSent))
                             Bus.SetMessageHeader(msg, Headers.TimeSent, headers[Headers.TimeSent]);
                         //}
-                        Bus.Send(msg);
+                        switch (msgIntent)
+                        {
+                            case MessageIntentEnum.Send:
+                                Bus.Send(msg);
+                                break;
+                            case MessageIntentEnum.Publish:
+                                Bus.Publish(msg);
+                                break;
+                            case MessageIntentEnum.Subscribe:
+                                //noop
+                                break;
+                            case MessageIntentEnum.Unsubscribe:
+                                //noop
+                                break;
+                            case MessageIntentEnum.Reply:
+                                //noop
+                                break;
+                        }
                     }
 
 
