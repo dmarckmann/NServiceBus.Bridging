@@ -49,9 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BridgeCleaner.cs" />
     <Compile Include="Processor.cs" />
     <Compile Include="LogPipelineStepRegistration.cs" />
-    <Compile Include="MsgSaver.cs" />
+    <Compile Include="BridgeSaver.cs" />
     <Compile Include="MsgSaverPipelineStep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

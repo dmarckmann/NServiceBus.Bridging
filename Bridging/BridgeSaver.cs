@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Bridging
 {
-    public class MsgSaver : IBehavior<IncomingContext>
+    public class BridgeSaver : IBehavior<IncomingContext>
     {
         public IBus Bus { get; set; }
         public ReadOnlySettings Settings { get; set; }

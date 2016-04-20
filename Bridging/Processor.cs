@@ -18,7 +18,7 @@ using System.Timers;
 namespace Bridging
 {
 
-    public class Processor : IWantToRunWhenBusStartsAndStops
+    public class BridgeProcessor : IWantToRunWhenBusStartsAndStops
     {
         public Schedule Scheduler { get; set; }
         public ReadOnlySettings Settings { get; set; }
@@ -49,6 +49,7 @@ namespace Bridging
 
         private void ProcessMessagesFromBridge()
         {
+
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Bridge"].ConnectionString))
             {
@@ -113,6 +114,4 @@ namespace Bridging
             }
         }
     }
-
-
 }

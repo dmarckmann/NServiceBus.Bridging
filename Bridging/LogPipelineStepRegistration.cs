@@ -11,7 +11,7 @@ namespace Bridging
         {
 
             // Register the new step in the pipeline
-            busConfiguration.Pipeline.Register<MsgSaverPipelineStep>();
+            busConfiguration.Pipeline.Register<BridgeSaverPipelineStep>();
         }
     }
 }
