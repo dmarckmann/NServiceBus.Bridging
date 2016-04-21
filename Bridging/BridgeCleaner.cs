@@ -18,7 +18,7 @@ namespace Bridging
 
         public void Start()
         {
-            Clean();
+            //Clean();
             _timer.Elapsed += _timer_Elapsed;
             _timer.Interval = 60000.0;
             _timer.Start();

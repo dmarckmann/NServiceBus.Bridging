@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BridgeCleaner.cs" />
+    <Compile Include="BridgeCreator.cs" />
     <Compile Include="Processor.cs" />
     <Compile Include="LogPipelineStepRegistration.cs" />
     <Compile Include="BridgeSaver.cs" />

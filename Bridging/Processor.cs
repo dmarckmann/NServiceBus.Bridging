@@ -28,7 +28,7 @@ namespace Bridging
         private Timer _timer = new Timer();
         public void Start()
         {
-            ProcessMessagesFromBridge();
+            //ProcessMessagesFromBridge();
             _timer.Elapsed += _timer_Elapsed;
             _timer.Interval = 10000.0;
             _timer.Start();
