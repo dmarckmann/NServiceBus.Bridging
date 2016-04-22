@@ -4,13 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sared
+namespace Shared
 {
-    public class Command
+    public class CommandSendToTransport1
     {
         public Guid Id { get; set; }
     }
-    public class Event
+    public class EventRaisedByTransport1
+    {
+        public Guid Id { get; set; }
+    }
+
+
+    public class CommandSendToTransport2
+    {
+        public Guid Id { get; set; }
+    }
+    public class EventRaisedByTransport2
     {
         public Guid Id { get; set; }
     }

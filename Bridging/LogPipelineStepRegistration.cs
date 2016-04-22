@@ -10,8 +10,10 @@ namespace Bridging
         public void Customize(BusConfiguration busConfiguration)
         {
 
+            
             // Register the new step in the pipeline
             busConfiguration.Pipeline.Register<BridgeSaverPipelineStep>();
+
         }
     }
 }

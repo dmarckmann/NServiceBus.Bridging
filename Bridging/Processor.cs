@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using NServiceBus;
+using NServiceBus.ObjectBuilder;
 using NServiceBus.Pipeline;
 using NServiceBus.Pipeline.Contexts;
 using NServiceBus.Serialization;
 using NServiceBus.Settings;
+using NServiceBus.Unicast;
 using NServiceBus.Unicast.Messages;
 using System;
 using System.Collections.Generic;
@@ -23,6 +25,9 @@ namespace Bridging
         public Schedule Scheduler { get; set; }
         public ReadOnlySettings Settings { get; set; }
         public IMessageSerializer Serializer { get; set; }
+        public PipelineExecutor PipelineExecutor { get; set; }
+        public IBuilder Builder{ get; set; }
+
         public IBus Bus { get; set; }
 
         private Timer _timer = new Timer();
@@ -36,7 +41,9 @@ namespace Bridging
 
         private void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
+            _timer.Stop();
             ProcessMessagesFromBridge();
+            _timer.Start();
         }
 
         public void Stop()
@@ -54,56 +61,28 @@ namespace Bridging
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Bridge"].ConnectionString))
             {
                 conn.Open();
-                string sql = "SELECT MessageId, Source, Destination, Intent, Processed, Headers, Body FROM [dbo].[Bridge] WHERE Processed = 0 AND Source = @Source";
+                string sql = "SELECT MessageId, Source, Destination, Intent, Processed, Headers, Body FROM [dbo].[Bridge] WHERE Processed = 0 AND (Destination = @Destination OR Destination IS NULL)";
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Source", Settings.EndpointName());
+                cmd.Parameters.AddWithValue("@Destination", Settings.EndpointName());
                 var reader = cmd.ExecuteReader();
 
                 while (reader.Read())
                 {
                     string id = reader.GetString(reader.GetOrdinal("MessageId"));
                     string source = reader.GetString(reader.GetOrdinal("Source"));
-                    string dest = reader.GetString(reader.GetOrdinal("Destination"));
+                    string dest = reader.IsDBNull(reader.GetOrdinal("Destination")) ? null : reader.GetString(reader.GetOrdinal("Destination"));
                     string intent = reader.GetString(reader.GetOrdinal("Intent"));
                     var msgIntent = (MessageIntentEnum)Enum.Parse(typeof(MessageIntentEnum), intent);
                     Dictionary<string, string> headers = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("Headers")));
                     var messageTypes = headers[Headers.EnclosedMessageTypes].Split(';').Select(i => Type.GetType(i)).ToList();
-                    using (Stream body = reader.GetStream(reader.GetOrdinal("Body")))
-                    {
 
-                        var msg = Serializer.Deserialize(body, messageTypes).First();
-                        //foreach (var pair in headers)
-                        //{
-                        Bus.SetMessageHeader(msg, Headers.MessageId, id);
-
-                        if (headers.ContainsKey(Headers.ConversationId))
-                            Bus.SetMessageHeader(msg, Headers.ConversationId, headers[Headers.ConversationId]);
-                        if (headers.ContainsKey(Headers.RelatedTo))
-                            Bus.SetMessageHeader(msg, Headers.RelatedTo, headers[Headers.RelatedTo]);
-                        if (headers.ContainsKey(Headers.TimeSent))
-                            Bus.SetMessageHeader(msg, Headers.TimeSent, headers[Headers.TimeSent]);
-                        //}
-                        switch (msgIntent)
-                        {
-                            case MessageIntentEnum.Send:
-                                Bus.Send(msg);
-                                break;
-                            case MessageIntentEnum.Publish:
-                                Bus.Publish(msg);
-                                break;
-                            case MessageIntentEnum.Subscribe:
-                                //noop
-                                break;
-                            case MessageIntentEnum.Unsubscribe:
-                                //noop
-                                break;
-                            case MessageIntentEnum.Reply:
-                                //noop
-                                break;
-                        }
-                    }
-
-
+                    var bodyStream = reader.GetStream(reader.GetOrdinal("Body"));
+                    byte[] body = new byte[bodyStream.Length];
+                    body = GetByteArray(bodyStream);
+                   
+                    var incomingContext = new IncomingContext(null , new TransportMessage(id, headers) { Body = body, MessageIntent = msgIntent });
+                    incomingContext.Set<IBuilder>(Builder);
+                    PipelineExecutor.InvokePipeline(PipelineExecutor.Incoming.Select(i => i.BehaviorType), incomingContext);
 
                     var cmd2 = new SqlCommand("UPDATE [dbo].[Bridge] SET Processed = 1 WHERE MessageId = @MessageId", conn);
                     cmd2.Parameters.AddWithValue("@MessageId", id);
@@ -112,6 +91,23 @@ namespace Bridging
                 }
 
             }
+        }
+
+        private static byte[] GetByteArray(Stream bodyStream)
+        {
+            byte[] body;
+            byte[] buffer = new byte[16 * 1024];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while ((read = bodyStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                body = ms.ToArray();
+            }
+
+            return body;
         }
     }
 }

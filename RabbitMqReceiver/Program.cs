@@ -1,7 +1,7 @@
 ﻿using NServiceBus;
 using NServiceBus.Features;
 using NServiceBus.Pipeline;
-using Sared;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +15,16 @@ namespace RabbitMqReceiver
         static void Main(string[] args)
         {
             BusConfiguration busConfiguration = new BusConfiguration();
-            busConfiguration.Conventions().DefiningCommandsAs(t => t.Name == "Command");
-            busConfiguration.Conventions().DefiningEventsAs(t => t.Name == "Event");
+            
+            busConfiguration.Conventions().DefiningCommandsAs(t => t.Name == "CommandSendToTransport1" || t.Name == "CommandSendToTransport2");
+            busConfiguration.Conventions().DefiningEventsAs(t => t.Name == "EventRaisedByTransport1" || t.Name == "EventRaisedByTransport2");
+            busConfiguration.DefineBridgedCommandsAs(t => t.Name == "CommandSendToTransport1");
             busConfiguration.UseTransport<RabbitMQTransport>();
             busConfiguration.UsePersistence<InMemoryPersistence>();
             busConfiguration.UseSerialization<XmlSerializer>();
 
             busConfiguration.EnableInstallers();
+          
             using (IBus bus = Bus.Create(busConfiguration).Start())
             {
                 Console.WriteLine("Press enter to publish an event");
@@ -44,13 +47,13 @@ namespace RabbitMqReceiver
                         }
                         if (key.Key == ConsoleKey.S)
                         {
-                            bus.Send(new Command() { Id = Guid.NewGuid() });
+                            bus.Send(new CommandSendToTransport1() { Id = Guid.NewGuid() });
                             Console.WriteLine("Msg sent ");
                         }
 
                         if (key.Key == ConsoleKey.P)
                         {
-                            bus.Publish(new Event() { Id = Guid.NewGuid() });
+                            bus.Publish(new EventRaisedByTransport2() { Id = Guid.NewGuid() });
                             Console.WriteLine("Msg published");
                         }
                     }
@@ -60,18 +63,18 @@ namespace RabbitMqReceiver
         }
     }
 
-    class Handler : IHandleMessages<Event>, IHandleMessages<Command>
+    class Handler : IHandleMessages<EventRaisedByTransport1>, IHandleMessages<CommandSendToTransport2>
     {
-        public void Handle(Event message)
+        public void Handle(EventRaisedByTransport1 message)
         {
 
-            Console.WriteLine("RmqHandler: Event {0}", message.Id);
+            Console.WriteLine("Transport2 Handler: EventRaisedByTransport1 {0}", message.Id);
         }
 
-        public void Handle(Command message)
+        public void Handle(CommandSendToTransport2 message)
         {
 
-            Console.WriteLine("RmqHandler: Command {0}", message.Id);
+            Console.WriteLine("Transport2 Handler: CommandSendToTransport2 {0}", message.Id);
         }
     }
 }

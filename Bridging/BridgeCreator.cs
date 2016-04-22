@@ -25,7 +25,7 @@ namespace Bridging
                     string sql2 = @"CREATE TABLE [dbo].[Bridge](
                                         [MessageId][nvarchar](255) NOT NULL,
                                         [Source] [nvarchar](255) NOT NULL,
-                                        [Destination] [nvarchar](255) NOT NULL,
+                                        [Destination] [nvarchar](255) NULL,
                                         [TimeSent] [datetime] NOT NULL,
                                         [Intent] [nvarchar](10) NOT NULL,
                                         [Processed] [bit] NOT NULL,

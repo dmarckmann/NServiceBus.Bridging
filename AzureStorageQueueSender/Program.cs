@@ -1,5 +1,5 @@
 ﻿using NServiceBus;
-using Sared;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +13,9 @@ namespace AzureStorageQueueSender
         static void Main(string[] args)
         {
             BusConfiguration busConfiguration = new BusConfiguration();
-            busConfiguration.Conventions().DefiningCommandsAs(t => t.Name == "Command");
-            busConfiguration.Conventions().DefiningEventsAs(t => t.Name == "Event");
+            busConfiguration.Conventions().DefiningCommandsAs(t => t.Name.Contains("Command"));
+            busConfiguration.Conventions().DefiningEventsAs(t => t.Name.Contains("Event"));
+            busConfiguration.DefineBridgedCommandsAs(t => t.Name == "CommandSendToTransport2");
             busConfiguration.UseTransport<AzureServiceBusTransport>();
             busConfiguration.UsePersistence<InMemoryPersistence>();
             busConfiguration.UseSerialization<XmlSerializer>();
@@ -39,13 +40,13 @@ namespace AzureStorageQueueSender
                     }
                     if (key.Key == ConsoleKey.S)
                     {
-                        bus.Send(new Command() { Id = Guid.NewGuid() });
+                        bus.Send(new CommandSendToTransport2() { Id = Guid.NewGuid() });
                         Console.WriteLine("Msg sent ");
                     }
 
                     if (key.Key == ConsoleKey.P)
                     {
-                        bus.Publish(new Event() { Id = Guid.NewGuid() });
+                        bus.Publish(new EventRaisedByTransport1() { Id = Guid.NewGuid() });
                         Console.WriteLine("Msg published");
                     }
 
@@ -55,18 +56,18 @@ namespace AzureStorageQueueSender
         }
 
 
-        class Handler : IHandleMessages<Event>, IHandleMessages<Command>
+        class Handler : IHandleMessages<EventRaisedByTransport2>, IHandleMessages<CommandSendToTransport1>
         {
-            public void Handle(Event message)
+            public void Handle(EventRaisedByTransport2 message)
             {
 
-                Console.WriteLine("AsbHandler: Event {0}", message.Id);
+                Console.WriteLine("Transport1Handler: EventRaisedByTransport2 {0}", message.Id);
             }
 
-            public void Handle(Command message)
+            public void Handle(CommandSendToTransport1 message)
             {
 
-                Console.WriteLine("AsbHandler: Command {0}", message.Id);
+                Console.WriteLine("Transport1 Handler: CommandSendToTransport1 {0}", message.Id);
             }
         }
     }

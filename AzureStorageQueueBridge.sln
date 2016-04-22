@@ -3,15 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageQueueBridge", "AzureStorageQueueBridge\AzureStorageQueueBridge.csproj", "{B9EFFAD6-6438-4332-806E-52FF701122F9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageQueueSender", "AzureStorageQueueSender\AzureStorageQueueSender.csproj", "{AC2313B5-CA94-4E9B-9AF9-F1F5AB065770}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMqReceiver", "RabbitMqReceiver\RabbitMqReceiver.csproj", "{874F4CF3-5DA7-42D4-86BF-7961FA4F5E1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sared", "Sared\Sared.csproj", "{1BADE8F9-FD41-4F1C-8400-6C04EC8F5E8A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMqBridge", "RabbitMqBridge\RabbitMqBridge.csproj", "{687F72C7-DFAC-4680-9B67-A2840F9D883F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Sared\Shared.csproj", "{1BADE8F9-FD41-4F1C-8400-6C04EC8F5E8A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bridging", "Bridging\Bridging.csproj", "{93A192F8-0B28-4DC9-A999-56C7FD139A0B}"
 EndProject
@@ -21,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B9EFFAD6-6438-4332-806E-52FF701122F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B9EFFAD6-6438-4332-806E-52FF701122F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B9EFFAD6-6438-4332-806E-52FF701122F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B9EFFAD6-6438-4332-806E-52FF701122F9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AC2313B5-CA94-4E9B-9AF9-F1F5AB065770}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AC2313B5-CA94-4E9B-9AF9-F1F5AB065770}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC2313B5-CA94-4E9B-9AF9-F1F5AB065770}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -37,10 +29,6 @@ Global
 		{1BADE8F9-FD41-4F1C-8400-6C04EC8F5E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BADE8F9-FD41-4F1C-8400-6C04EC8F5E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BADE8F9-FD41-4F1C-8400-6C04EC8F5E8A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{687F72C7-DFAC-4680-9B67-A2840F9D883F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{687F72C7-DFAC-4680-9B67-A2840F9D883F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{687F72C7-DFAC-4680-9B67-A2840F9D883F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{687F72C7-DFAC-4680-9B67-A2840F9D883F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{93A192F8-0B28-4DC9-A999-56C7FD139A0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{93A192F8-0B28-4DC9-A999-56C7FD139A0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93A192F8-0B28-4DC9-A999-56C7FD139A0B}.Release|Any CPU.ActiveCfg = Release|Any CPU

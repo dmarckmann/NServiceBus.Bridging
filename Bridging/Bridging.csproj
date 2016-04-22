@@ -11,7 +11,7 @@
     <AssemblyName>Bridging</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-      <BuildPackage>true</BuildPackage>
+    <BuildPackage>true</BuildPackage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,6 +51,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BridgeCleaner.cs" />
+    <Compile Include="BridgeContext.cs" />
+    <Compile Include="BridgeContextExtensions.cs" />
     <Compile Include="BridgeCreator.cs" />
     <Compile Include="Processor.cs" />
     <Compile Include="LogPipelineStepRegistration.cs" />
