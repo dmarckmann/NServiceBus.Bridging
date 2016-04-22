@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using NServiceBus;
+using NServiceBus.Config;
 using NServiceBus.ObjectBuilder;
 using NServiceBus.Pipeline;
 using NServiceBus.Pipeline.Contexts;
@@ -29,6 +30,10 @@ namespace Bridging
         public IBuilder Builder{ get; set; }
 
         public IBus Bus { get; set; }
+        public BridgeContext Context { get; set; }
+
+        public MessageEndpointMappingCollection MessageEndpointMappings { get; set; }
+
 
         private Timer _timer = new Timer();
         public void Start()
@@ -58,7 +63,7 @@ namespace Bridging
         {
 
 
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Bridge"].ConnectionString))
+            using (SqlConnection conn = new SqlConnection(Context.BridgeConnectionString.Invoke()))
             {
                 conn.Open();
                 string sql = "SELECT MessageId, Source, Destination, Intent, Processed, Headers, Body FROM [dbo].[Bridge] WHERE Processed = 0 AND (Destination = @Destination OR Destination IS NULL)";
@@ -75,22 +80,41 @@ namespace Bridging
                     var msgIntent = (MessageIntentEnum)Enum.Parse(typeof(MessageIntentEnum), intent);
                     Dictionary<string, string> headers = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("Headers")));
                     var messageTypes = headers[Headers.EnclosedMessageTypes].Split(';').Select(i => Type.GetType(i)).ToList();
+                    if (ShouldHandleMessage(dest, messageTypes))
+                    {
 
-                    var bodyStream = reader.GetStream(reader.GetOrdinal("Body"));
-                    byte[] body = new byte[bodyStream.Length];
-                    body = GetByteArray(bodyStream);
-                   
-                    var incomingContext = new IncomingContext(null , new TransportMessage(id, headers) { Body = body, MessageIntent = msgIntent });
-                    incomingContext.Set<IBuilder>(Builder);
-                    PipelineExecutor.InvokePipeline(PipelineExecutor.Incoming.Select(i => i.BehaviorType), incomingContext);
+                        var bodyStream = reader.GetStream(reader.GetOrdinal("Body"));
+                        byte[] body = new byte[bodyStream.Length];
+                        body = GetByteArray(bodyStream);
 
-                    var cmd2 = new SqlCommand("UPDATE [dbo].[Bridge] SET Processed = 1 WHERE MessageId = @MessageId", conn);
-                    cmd2.Parameters.AddWithValue("@MessageId", id);
-                    cmd2.ExecuteNonQuery();
 
+                        //Let's treat this message as a normal incoming message.
+                        var transportMessage = new TransportMessage(id, headers);
+                        transportMessage.Body = body;
+                        transportMessage.MessageIntent = msgIntent;
+                        var incomingContext = new IncomingContext(null, transportMessage);
+                        incomingContext.Set<IBuilder>(Builder);
+                        PipelineExecutor.InvokePipeline(PipelineExecutor.Incoming.Select(i => i.BehaviorType), incomingContext);
+
+                        var cmd2 = new SqlCommand("UPDATE [dbo].[Bridge] SET Processed = 1 WHERE MessageId = @MessageId", conn);
+                        cmd2.Parameters.AddWithValue("@MessageId", id);
+                        cmd2.ExecuteNonQuery();
+
+                    }
                 }
 
             }
+        }
+
+        private bool ShouldHandleMessage(string destination, List<Type> messageTypes)
+        {
+            if (destination == Settings.EndpointName())
+                return true;
+
+            var q = from t in messageTypes
+                    where Context.BridgedEventDefinition(t)
+                    select t;
+            return q.Any();
         }
 
         private static byte[] GetByteArray(Stream bodyStream)

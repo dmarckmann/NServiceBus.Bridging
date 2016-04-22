@@ -11,10 +11,11 @@ namespace Bridging
 {
     public class BridgeCreator : IWantToRunWhenBusStartsAndStops
     {
+        public BridgeContext Context { get; set; }
         public void Start()
         {
 
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Bridge"].ConnectionString))
+            using (SqlConnection conn = new SqlConnection(Context.BridgeConnectionString.Invoke()))
             {
                 conn.Open();
                 string sql = "SELECT OBJECT_ID('Bridge')";

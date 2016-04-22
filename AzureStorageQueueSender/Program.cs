@@ -15,7 +15,9 @@ namespace AzureStorageQueueSender
             BusConfiguration busConfiguration = new BusConfiguration();
             busConfiguration.Conventions().DefiningCommandsAs(t => t.Name.Contains("Command"));
             busConfiguration.Conventions().DefiningEventsAs(t => t.Name.Contains("Event"));
-            busConfiguration.DefineBridgedCommandsAs(t => t.Name == "CommandSendToTransport2");
+            busConfiguration.Bridge().DefineBridgedCommandsAs(t => t.Name == "CommandSendToTransport2");
+            busConfiguration.Bridge().DefineBridgedEventsAs(t => t.Name == "EventRaisedByTransport2");
+            busConfiguration.Bridge().ConnectionStringName("Bridge");
             busConfiguration.UseTransport<AzureServiceBusTransport>();
             busConfiguration.UsePersistence<InMemoryPersistence>();
             busConfiguration.UseSerialization<XmlSerializer>();

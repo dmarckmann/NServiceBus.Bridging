@@ -5,11 +5,18 @@ namespace NServiceBus
 { 
     public static class BridgeContextExtensions
     {
-        public static void DefineBridgedCommandsAs(this BusConfiguration busConfiguration, Predicate<Type> action)
+
+
+        private static BridgeContext _context;
+        public static BridgeContext Bridge(this BusConfiguration busConfiguration)
         {
-            var bridgeContext = new BridgeContext();
-            bridgeContext.BridgedCommandDefinition = action;
-            busConfiguration.RegisterComponents(c => c.RegisterSingleton(bridgeContext));
+                if (_context == null)
+                {
+                    _context = new BridgeContext();
+                busConfiguration.RegisterComponents(c => c.RegisterSingleton(_context));
+            }
+
+            return _context;
         }
     }
 

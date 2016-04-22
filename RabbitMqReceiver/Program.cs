@@ -15,10 +15,14 @@ namespace RabbitMqReceiver
         static void Main(string[] args)
         {
             BusConfiguration busConfiguration = new BusConfiguration();
-            
+
             busConfiguration.Conventions().DefiningCommandsAs(t => t.Name == "CommandSendToTransport1" || t.Name == "CommandSendToTransport2");
             busConfiguration.Conventions().DefiningEventsAs(t => t.Name == "EventRaisedByTransport1" || t.Name == "EventRaisedByTransport2");
-            busConfiguration.DefineBridgedCommandsAs(t => t.Name == "CommandSendToTransport1");
+
+            busConfiguration.Bridge().DefineBridgedCommandsAs(t => t.Name == "CommandSendToTransport1");
+            busConfiguration.Bridge().DefineBridgedEventsAs(t => t.Name == "EventRaisedByTransport1");
+            busConfiguration.Bridge().ConnectionStringName("Whatever");
+
             busConfiguration.UseTransport<RabbitMQTransport>();
             busConfiguration.UsePersistence<InMemoryPersistence>();
             busConfiguration.UseSerialization<XmlSerializer>();

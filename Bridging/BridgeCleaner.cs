@@ -11,7 +11,7 @@ namespace Bridging
 {
     public class BridgeCleaner : IWantToRunWhenBusStartsAndStops
     {
-
+        public BridgeContext Context { get; set; }
         public ReadOnlySettings Settings { get; set; }
 
         private Timer _timer = new Timer();
@@ -48,7 +48,7 @@ namespace Bridging
             var dateBeforeWhichEntriesMayBeDeleted = DateTimeOffset.UtcNow - timeSpan;
 
 
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Bridge"].ConnectionString))
+            using (SqlConnection conn = new SqlConnection(Context.BridgeConnectionString.Invoke()))
             {
                 conn.Open();
                 string sql = "DELETE FROM [dbo].[Bridge] WHERE Processed = 1 AND Destination = @EndpointName AND TimeSent < @DateBeforeWhichEntriesMayBeDeleted";

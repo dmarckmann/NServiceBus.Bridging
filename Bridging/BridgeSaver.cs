@@ -23,7 +23,8 @@ namespace Bridging
         {
 
             var msg = context.OutgoingMessage;
-            if (ShouldBridgeMessage(msg))
+            var messageShouldBeBridged = ShouldBridgeMessage(msg);
+            if (messageShouldBeBridged)
             {
                 string destination = null;
                 if (context.DeliveryOptions is SendOptions)
@@ -31,7 +32,7 @@ namespace Bridging
                     destination = (context.DeliveryOptions as SendOptions).Destination.Queue;
                 }
                 
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["Bridge"].ConnectionString))
+                using (SqlConnection conn = new SqlConnection(Context.BridgeConnectionString.Invoke()))
                 {
                     try
                     {
@@ -58,22 +59,15 @@ namespace Bridging
                     }
                 }
             }
-            else
+            
+            if (msg.MessageIntent == MessageIntentEnum.Publish || !messageShouldBeBridged)
             {
                 next();
             }
 
         }
 
-        private string GetDestination(TransportMessage msg)
-        {
-            var messageTypes = msg.Headers[Headers.EnclosedMessageTypes].Split(';').Select(i => Type.GetType(i)).ToList();
-            var q = from t in messageTypes
-                    from m in MessageEndpointMappings.Cast<MessageEndpointMapping>()
-                    where m.TypeFullName == t.FullName
-                    select m.Endpoint;
-            return q.FirstOrDefault();
-        }
+       
 
         private bool ShouldBridgeMessage(TransportMessage msg)
         {
